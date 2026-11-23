@@ -205,19 +205,23 @@
         z-index: 200;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 10px;
         box-sizing: border-box;
       }
       .letter-overlay.active { display: flex; }
 
       /* ============================================================
-         5b. THE A4 PAPER CARD (Compact & Perfectly Framed)
+         5b. THE A4 PAPER CARD
+         Altura FIXA (e não só max-height) para que a área das páginas
+         tenha um tamanho definido e possa rolar por dentro.
          ============================================================ */
       .a4-paper {
         position: relative;
-        width: 92%;
-        max-width: 480px;
-        max-height: 80vh;
+        width: 95%;
+        max-width: 520px;
+        height: 92vh;                    /* fallback */
+        height: min(92vh, 720px);
+        height: min(92dvh, 720px);       /* melhor no celular (barra do navegador) */
         background: #fffdf8;
         border-radius: 8px;
         box-shadow:
@@ -273,6 +277,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 8px;
         flex-shrink: 0;
       }
 
@@ -289,13 +294,18 @@
         font-size: 0.7rem;
         color: rgba(255,255,255,0.7);
         letter-spacing: 0.05em;
+        white-space: nowrap;
       }
 
       /* ============================================================
          5d. SWIPE TRACK
+         O track fica em position:absolute com inset:0, então ele
+         SEMPRE tem a altura exata da área disponível (não depende de
+         height:100% em cadeia, que o Safari/iOS não resolvia direito).
          ============================================================ */
       .pages-track-wrap {
         flex: 1;
+        min-height: 0;
         overflow: hidden;
         position: relative;
         z-index: 2;
@@ -305,22 +315,27 @@
       .pages-track-wrap:active { cursor: grabbing; }
 
       .pages-track {
+        position: absolute;
+        inset: 0;
         display: flex;
-        height: 100%;
+        align-items: stretch;
         will-change: transform;
         transition: transform 0.52s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
 
       /* ============================================================
-         5e. INDIVIDUAL PAGE (Compact & Fully Viewable)
+         5e. INDIVIDUAL PAGE (rola por dentro quando o texto é grande)
          ============================================================ */
       .page {
-        min-width: 100%;
-        height: 100%;
+        flex: 0 0 100%;
+        min-width: 0;
         overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: auto;
         box-sizing: border-box;
-        padding: 22px 20px 16px 54px;   /* extra left for margin line */
-        scroll-behavior: smooth;
+        padding: 16px 20px 12px 54px;   /* extra left for margin line */
       }
 
       /* Scrollbar for page overflow */
@@ -361,8 +376,8 @@
         font-size: 1.1rem;
         font-weight: 500;
         color: #2d0a14;
-        line-height: 1.78;
-        margin-bottom: 12px;
+        line-height: 1.65;
+        margin-bottom: 10px;
         text-align: justify;
         text-justify: inter-word;
         letter-spacing: 0.01em;
@@ -612,7 +627,6 @@
          FEATURE 3 — TYPEWRITER  (characters revealed via clip)
          ============================================================ */
       .typewriter-ready {
-        /* text is hidden until JS reveals it */
         overflow: hidden;
       }
       .typewriter-char {
@@ -638,8 +652,12 @@
         padding: 2px 12px;
         letter-spacing: 0.05em;
         backdrop-filter: blur(4px);
+        white-space: nowrap;
       }
 
+      /* ============================================================
+         MOBILE — tudo compacto, sem quebrar linha no topo/rodapé
+         ============================================================ */
       @media (max-width: 500px) {
         .envelope { width: 260px; height: 180px; }
         .letter-teaser { width: 230px; height: 160px; }
@@ -647,26 +665,31 @@
           border-left-width: 130px;
           border-right-width: 130px;
         }
-        .a4-paper { max-height: 85vh; width: 95%; }
-        .page { padding: 18px 16px 14px 42px; }
+
+        .letter-overlay { padding: 8px; }
+        .a4-paper { width: 100%; }
+        .a4-paper::before { left: 32px; }
+
+        .paper-header { padding: 8px 12px; gap: 6px; }
+        .paper-header .letter-title {
+          flex: 1;
+          min-width: 0;
+          font-size: 0.76rem;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .name-badge { font-size: 0.66rem; padding: 2px 8px; flex-shrink: 0; }
+        .paper-header .page-counter { font-size: 0.64rem; flex-shrink: 0; }
+
+        .page { padding: 14px 14px 14px 40px; }
         .letter-greeting { font-size: 1.4rem; }
-        .letter-body { font-size: 1.02rem; line-height: 1.72; }
-        .paper-header { padding: 8px 14px; }
-        .a4-paper::before { left: 36px; }
+        .letter-body { font-size: 1.05rem; line-height: 1.6; }
+
+        .letter-nav { padding: 6px 12px; }
+        .drag-hint { display: none; }   /* some no celular pra ganhar espaço */
       }
-
-      .letter-overlay { padding: 10px; }
-
-      .a4-paper {
-        width: 95%;
-        max-width: 520px;
-        height: min(92vh, 720px);
-        height: min(92dvh, 720px); /* melhor no celular */
-        max-height: none;
-}
-
-.page { padding-top: 16px; padding-bottom: 12px; }
-.letter-body { line-height: 1.65; margin-bottom: 10px; }
 
     </style>
   </head>
@@ -745,10 +768,6 @@
                 Aguardo ansiosamente pelo dia em que te entregarei isso. Não tenho certeza quanto a que tempo ou o modo que vai ser entregue, mas há apenas uma certeza: ela chegará. Afinal, seres humanos se agarram sempre a algumas certezas, e a minha é sempre te entregar algumas dedicatórias e comidas gostosas. Não é tão ruim assim, não é? Espero que esse texto cumpra com seu propósito, nem que seja por alívio diante de um imprevisto. Desta forma, meus textos terão um valor a mais, sendo, de forma única e exclusiva, para você que está lendo agora, o meu carinho.
               </p>
 
-              <p class="letter-body tw-target">
-                
-              </p>
-
               <div class="letter-divider">❧ &nbsp; 🌹 &nbsp; ❧</div>
 
               <div class="proper-ending">
@@ -801,6 +820,10 @@
           const overlay = document.getElementById("letterOverlay");
           overlay.classList.add("active");
           initSwipeBook();
+          fitLetter();
+          if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(fitLetter);   // recalcula quando as fontes carregarem
+          }
         }, 600);
       }
 
@@ -819,11 +842,37 @@
       }
 
       /* ======================================================
+         AJUSTE AUTOMÁTICO DO TAMANHO DO TEXTO
+         Desktop: encolhe a fonte até a página caber inteira.
+         Celular: não encolhe (fica ilegível) — a página rola.
+      ====================================================== */
+      function fitLetter() {
+        const root    = document.documentElement;
+        const pages   = document.querySelectorAll(".page");
+        const minSize = window.innerWidth <= 500 ? 16 : 12;
+        let size = 16;
+        root.style.fontSize = size + "px";
+        while (size > minSize && [...pages].some(p => p.scrollHeight > p.clientHeight + 1)) {
+          size -= 0.5;
+          root.style.fontSize = size + "px";
+        }
+      }
+
+      window.addEventListener("resize", () => {
+        if (document.getElementById("letterOverlay").classList.contains("active")) fitLetter();
+      });
+
+      /* ======================================================
          SWIPE / DRAG BOOK (2 PAGES)
       ====================================================== */
       const TOTAL_PAGES = 2;
       let currentPage = 0;
       let swipeInit   = false;
+
+      function resetScroll(i) {
+        const p = document.querySelectorAll(".page")[i];
+        if (p) p.scrollTop = 0;
+      }
 
       function initSwipeBook() {
         if (swipeInit) return;
@@ -831,6 +880,7 @@
 
         prepareAllTypewriter();
         buildDots();
+        for (let i = 0; i < TOTAL_PAGES; i++) resetScroll(i);
         updateBook(false);
         startTypewritePage(0);
 
@@ -863,30 +913,51 @@
           else                                                               updateBook(true);
         });
 
-        /* ---------- Touch swipe ---------- */
-        let touchStartX = 0;
+        /* ---------- Touch swipe ----------
+           Só vira a página quando o gesto é HORIZONTAL.
+           Gesto vertical = rolagem normal da página (não mexe no track). */
+        let tStartX = 0, tStartY = 0, tAxis = null;
+
         wrap.addEventListener("touchstart", e => {
-          touchStartX = e.touches[0].clientX;
-          track.style.transition = "none";
+          tStartX = e.touches[0].clientX;
+          tStartY = e.touches[0].clientY;
+          tAxis   = null;
         }, { passive: true });
+
         wrap.addEventListener("touchmove", e => {
-          const delta = e.touches[0].clientX - touchStartX;
-          track.style.transform =
-            `translateX(calc(${-currentPage * 100}% + ${delta}px))`;
+          const dx = e.touches[0].clientX - tStartX;
+          const dy = e.touches[0].clientY - tStartY;
+          if (!tAxis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+            tAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+            if (tAxis === "x") track.style.transition = "none";
+          }
+          if (tAxis === "x") {
+            track.style.transform =
+              `translateX(calc(${-currentPage * 100}% + ${dx}px))`;
+          }
         }, { passive: true });
+
         wrap.addEventListener("touchend", e => {
+          if (tAxis !== "x") return;
           track.style.transition = "";
-          const delta     = e.changedTouches[0].clientX - touchStartX;
+          const dx        = e.changedTouches[0].clientX - tStartX;
           const threshold = wrap.offsetWidth * 0.18;
-          if      (delta < -threshold && currentPage < TOTAL_PAGES - 1) goToPage(currentPage + 1);
-          else if (delta >  threshold && currentPage > 0)               goToPage(currentPage - 1);
-          else                                                           updateBook(true);
+          if      (dx < -threshold && currentPage < TOTAL_PAGES - 1) goToPage(currentPage + 1);
+          else if (dx >  threshold && currentPage > 0)               goToPage(currentPage - 1);
+          else                                                        updateBook(true);
+        }, { passive: true });
+
+        wrap.addEventListener("touchcancel", () => {
+          if (tAxis !== "x") return;
+          track.style.transition = "";
+          updateBook(true);
         }, { passive: true });
       }
 
       function goToPage(n) {
         if (n < 0 || n >= TOTAL_PAGES) return;
         currentPage = n;
+        resetScroll(n);          // a página nova sempre abre no topo
         updateBook(true);
         startTypewritePage(n);
       }
@@ -896,10 +967,6 @@
         if (!animate) track.style.transition = "none";
         track.style.transform = `translateX(${-currentPage * 100}%)`;
         if (!animate) { void track.offsetHeight; track.style.transition = ""; }
-
-        /* Scroll current page back to top */
-        const pages = document.querySelectorAll(".page");
-        if (pages[currentPage]) pages[currentPage].scrollTop = 0;
 
         /* Arrows & Hint */
         const prevArrow = document.getElementById("prevArrow");
@@ -1054,4 +1121,3 @@
     </script>
   </body>
 </html>
-
